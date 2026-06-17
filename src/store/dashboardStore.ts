@@ -1,33 +1,42 @@
-import { create } from 'zustand';
-import type { DashboardData, TimePeriod, CarouselPanel, SchoolDetail } from '@/types';
-import { loadData, saveData } from '@/data/storage';
-import { generateMockData } from '@/data/mockData';
+import { create } from "zustand";
+import type {
+  DashboardData,
+  TimePeriod,
+  CarouselPanel,
+  SchoolDetail,
+} from "@/types";
+import { loadData, saveData } from "@/data/storage";
+import { generateMockData } from "@/data/mockData";
 import {
   filterCoreStatsByPeriod,
   filterSchoolRankingsByPeriod,
   filterGuideDataByPeriod,
   filterMediaDataByPeriod,
-} from '@/utils/period';
+} from "@/utils/period";
 
 interface DashboardState {
   data: DashboardData | null;
   timePeriod: TimePeriod;
   activePanel: CarouselPanel;
   selectedSchool: SchoolDetail | null;
+  selectedSchoolIds: string[];
   isLoading: boolean;
   initData: () => void;
   setTimePeriod: (period: TimePeriod) => void;
   setActivePanel: (panel: CarouselPanel) => void;
   selectSchool: (schoolId: string) => void;
   closeSchoolDetail: () => void;
+  toggleSchoolCompare: (schoolId: string) => void;
+  clearSchoolCompare: () => void;
   regenerateData: () => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set, get) => ({
   data: null,
-  timePeriod: 'year',
-  activePanel: 'ranking',
+  timePeriod: "year",
+  activePanel: "ranking",
   selectedSchool: null,
+  selectedSchoolIds: [],
   isLoading: true,
 
   initData: () => {
@@ -60,6 +69,21 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     set({ selectedSchool: null });
   },
 
+  toggleSchoolCompare: (schoolId) => {
+    const { selectedSchoolIds } = get();
+    if (selectedSchoolIds.includes(schoolId)) {
+      set({
+        selectedSchoolIds: selectedSchoolIds.filter((id) => id !== schoolId),
+      });
+    } else {
+      set({ selectedSchoolIds: [...selectedSchoolIds, schoolId] });
+    }
+  },
+
+  clearSchoolCompare: () => {
+    set({ selectedSchoolIds: [] });
+  },
+
   regenerateData: () => {
     const data = generateMockData();
     saveData(data);
@@ -82,7 +106,11 @@ export function useFilteredData() {
   }
 
   return {
-    coreStats: filterCoreStatsByPeriod(data.coreStats, timePeriod),
+    coreStats: filterCoreStatsByPeriod(
+      data.coreStats,
+      data.coreMonthlyData,
+      timePeriod,
+    ),
     schoolRankings: filterSchoolRankingsByPeriod(
       data.schoolRankings,
       data.schoolDetails,
