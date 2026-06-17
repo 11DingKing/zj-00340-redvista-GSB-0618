@@ -81,3 +81,15 @@ export interface DashboardData {
 export type TimePeriod = "quarter" | "year";
 
 export type CarouselPanel = "ranking" | "guide" | "media" | "progress";
+
+export type SchoolMetricKey =
+  | "teamCount"
+  | "studentCount"
+  | "guideCount"
+  | "guideServiceHours";
+
+export interface SchoolMetricConfig {
+  label: string;
+  unit: string;
+  color: string;
+}

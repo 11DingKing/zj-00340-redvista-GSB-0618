@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
-import type { EChartsOption } from 'echarts';
+import type { EChartsOption, TooltipComponentFormatterCallbackParams } from 'echarts';
 import { Users, GraduationCap, Mic, Clock, Check, X } from 'lucide-react';
 import { Card } from './Card';
 import { useDashboardStore, useFilteredData } from '@/store/dashboardStore';
 import { formatNumber } from '@/utils/format';
 import { cn } from '@/lib/utils';
+import type { SchoolMetricKey, SchoolMetricConfig } from '@/types';
 
-type MetricKey = 'teamCount' | 'studentCount' | 'guideCount' | 'guideServiceHours';
+interface MetricConfigItem extends SchoolMetricConfig {
+  icon: typeof Users;
+}
 
-const METRIC_CONFIG: Record<MetricKey, { label: string; unit: string; icon: typeof Users; color: string }> = {
+const METRIC_CONFIG: Record<SchoolMetricKey, MetricConfigItem> = {
   teamCount: { label: '团队数', unit: '个', icon: Users, color: '#ffd700' },
   studentCount: { label: '学生数', unit: '人', icon: GraduationCap, color: '#cd5c5c' },
   guideCount: { label: '讲解员数', unit: '名', icon: Mic, color: '#daa520' },
@@ -32,14 +35,14 @@ const BAR_COLORS = [
 export function SchoolComparison() {
   const { schoolRankings } = useFilteredData();
   const { selectedSchoolIds, toggleSchoolSelection, clearSchoolSelection } = useDashboardStore();
-  const [activeMetric, setActiveMetric] = useState<MetricKey>('teamCount');
+  const [activeMetric, setActiveMetric] = useState<SchoolMetricKey>('teamCount');
 
   const selectedSchools = useMemo(() => {
     return schoolRankings.filter((s) => selectedSchoolIds.includes(s.id));
   }, [schoolRankings, selectedSchoolIds]);
 
   const chartOption: EChartsOption = useMemo(() => {
-    const metricLabels: MetricKey[] = ['teamCount', 'studentCount', 'guideCount', 'guideServiceHours'];
+    const metricLabels: SchoolMetricKey[] = ['teamCount', 'studentCount', 'guideCount', 'guideServiceHours'];
 
     const series = selectedSchools.map((school, idx) => ({
       name: school.name,
@@ -68,6 +71,23 @@ export function SchoolComparison() {
       },
     }));
 
+    const tooltipFormatter = (params: TooltipComponentFormatterCallbackParams): string => {
+      const paramArray = Array.isArray(params) ? params : [params];
+      if (!paramArray.length) return '';
+      const firstItem = paramArray[0];
+      const metricKey = metricLabels[firstItem.dataIndex] as SchoolMetricKey;
+      const config = METRIC_CONFIG[metricKey];
+      let html = `<div style="font-family: 'Noto Serif SC', serif; margin-bottom: 8px;"><strong style="color: #daa520;">${config.label}</strong></div>`;
+      paramArray.forEach((item) => {
+        const value = typeof item.value === 'number' ? item.value : 0;
+        html += `<div style="display: flex; justify-content: space-between; gap: 20px; margin: 4px 0;">
+          <span style="color: #aaa;">${item.seriesName}</span>
+          <span style="color: #ffd700; font-weight: bold;">${formatNumber(value)} ${config.unit}</span>
+        </div>`;
+      });
+      return html;
+    };
+
     return {
       tooltip: {
         trigger: 'axis',
@@ -78,19 +98,7 @@ export function SchoolComparison() {
           color: '#fff',
           fontFamily: 'Noto Serif SC',
         },
-        formatter: (params: any) => {
-          if (!params.length) return '';
-          const metricKey = metricLabels[params[0].dataIndex] as MetricKey;
-          const config = METRIC_CONFIG[metricKey];
-          let html = `<div style="font-family: 'Noto Serif SC', serif; margin-bottom: 8px;"><strong style="color: #daa520;">${config.label}</strong></div>`;
-          params.forEach((item: any) => {
-            html += `<div style="display: flex; justify-content: space-between; gap: 20px; margin: 4px 0;">
-              <span style="color: #aaa;">${item.seriesName}</span>
-              <span style="color: #ffd700; font-weight: bold;">${formatNumber(item.value)} ${config.unit}</span>
-            </div>`;
-          });
-          return html;
-        },
+        formatter: tooltipFormatter,
       },
       legend: {
         show: selectedSchools.length > 0,
@@ -202,7 +210,7 @@ export function SchoolComparison() {
         <div className="flex-1 flex flex-col min-w-0">
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-3">
-              {(Object.keys(METRIC_CONFIG) as MetricKey[]).map((key) => {
+              {(Object.keys(METRIC_CONFIG) as SchoolMetricKey[]).map((key) => {
                 const config = METRIC_CONFIG[key];
                 const Icon = config.icon;
                 return (
@@ -225,7 +233,6 @@ export function SchoolComparison() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {selectedSchools.slice(0, 4).map((school, idx) => {
-                const Icon = activeMetricConfig.icon;
                 const value = school[activeMetric];
                 return (
                   <div
