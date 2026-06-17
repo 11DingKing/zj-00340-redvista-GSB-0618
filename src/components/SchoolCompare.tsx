@@ -1,36 +1,26 @@
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
-import type { SchoolData } from "@/types";
+import type { CompareMetric, BarColorPair, AxisTooltipParam } from "@/types";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { useFilteredData } from "@/store/dashboardStore";
 import { formatNumber } from "@/utils/format";
 import { Card } from "./Card";
 import { useCarousel } from "@/hooks/useCarousel";
 
-const METRICS = [
-  { key: "teamCount" as const, label: "团队数", unit: "个", color: "#ffd700" },
+const METRICS: CompareMetric[] = [
+  { key: "teamCount", label: "团队数", unit: "个", color: "#ffd700" },
+  { key: "studentCount", label: "学生数", unit: "人", color: "#cd5c5c" },
+  { key: "guideCount", label: "讲解员数", unit: "名", color: "#4fc3f7" },
   {
-    key: "studentCount" as const,
-    label: "学生数",
-    unit: "人",
-    color: "#cd5c5c",
-  },
-  {
-    key: "guideCount" as const,
-    label: "讲解员数",
-    unit: "名",
-    color: "#4fc3f7",
-  },
-  {
-    key: "guideServiceHours" as const,
+    key: "guideServiceHours",
     label: "讲解服务时长",
     unit: "h",
     color: "#81c784",
   },
 ];
 
-const BAR_COLORS = [
+const BAR_COLORS: BarColorPair[] = [
   { from: "#ffd700", to: "#daa520" },
   { from: "#cd5c5c", to: "#8b0000" },
   { from: "#4fc3f7", to: "#0288d1" },
@@ -88,15 +78,15 @@ export function SchoolCompare() {
         axisPointer: {
           type: "shadow",
         },
-        formatter: (params: any) => {
+        formatter: (params: AxisTooltipParam | AxisTooltipParam[]) => {
           if (!Array.isArray(params)) return "";
           const rows = params
-            .map((p: any) => {
-              const metric = METRICS[p.seriesIndex];
+            .map((p: AxisTooltipParam) => {
+              const metric = METRICS[p.seriesIndex ?? 0];
               return `<div style="display:flex;align-items:center;gap:6px;">
                 <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span>
                 <span>${metric.label}：</span>
-                <span style="color:#ffd700;font-weight:bold;">${formatNumber(p.value)} ${metric.unit}</span>
+                <span style="color:#ffd700;font-weight:bold;">${formatNumber(p.value as number)} ${metric.unit}</span>
               </div>`;
             })
             .join("");
