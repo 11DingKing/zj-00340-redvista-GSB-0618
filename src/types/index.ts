@@ -71,6 +71,30 @@ export interface DashboardData {
   dataVersion: string;
 }
 
-export type TimePeriod = 'quarter' | 'year';
+export type TimePeriod = "quarter" | "year";
 
-export type CarouselPanel = 'ranking' | 'guide' | 'media' | 'progress';
+export type CarouselPanel = "ranking" | "guide" | "media" | "progress";
+
+export type CompareMetricKey =
+  | "teamCount"
+  | "studentCount"
+  | "guideCount"
+  | "guideServiceHours";
+
+export interface CompareMetric {
+  key: CompareMetricKey;
+  label: string;
+  unit: string;
+  color: string;
+}
+
+export interface BarColorPair {
+  from: string;
+  to: string;
+}
+
+import type { DefaultLabelFormatterCallbackParams } from "echarts";
+
+export interface AxisTooltipParam extends DefaultLabelFormatterCallbackParams {
+  axisValueLabel: string;
+}
