@@ -5,6 +5,12 @@ export interface CoreStats {
   toursYoY: number;
 }
 
+export interface CoreStatsMonthly {
+  month: string;
+  totalVisits: number;
+  totalTours: number;
+}
+
 export interface SchoolData {
   id: string;
   name: string;
@@ -61,6 +67,7 @@ export interface SchoolDetail {
 
 export interface DashboardData {
   coreStats: CoreStats;
+  monthlyCoreStats: CoreStatsMonthly[];
   schoolRankings: SchoolData[];
   guideData: GuideMonthlyData[];
   mediaData: MediaMonthlyData[];
@@ -71,6 +78,18 @@ export interface DashboardData {
   dataVersion: string;
 }
 
-export type TimePeriod = 'quarter' | 'year';
+export type TimePeriod = "quarter" | "year";
 
-export type CarouselPanel = 'ranking' | 'guide' | 'media' | 'progress';
+export type CarouselPanel = "ranking" | "guide" | "media" | "progress";
+
+export type SchoolMetricKey =
+  | "teamCount"
+  | "studentCount"
+  | "guideCount"
+  | "guideServiceHours";
+
+export interface SchoolMetricConfig {
+  label: string;
+  unit: string;
+  color: string;
+}
