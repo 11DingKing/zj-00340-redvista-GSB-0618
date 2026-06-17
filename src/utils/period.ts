@@ -1,13 +1,20 @@
-import type { TimePeriod, CoreStats, SchoolData, GuideMonthlyData, MediaMonthlyData } from '@/types';
+import type {
+  TimePeriod,
+  CoreStats,
+  CoreMonthlyData,
+  SchoolData,
+  GuideMonthlyData,
+  MediaMonthlyData,
+} from "@/types";
 
 function isInPeriod(dateStr: string, period: TimePeriod): boolean {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const [year, month] = dateStr.split('-').map(Number);
+  const [year, month] = dateStr.split("-").map(Number);
 
   if (year !== currentYear) return false;
 
-  if (period === 'year') return true;
+  if (period === "year") return true;
 
   const currentQuarter = Math.floor(now.getMonth() / 3);
   const monthQuarter = Math.floor((month - 1) / 3);
@@ -16,9 +23,25 @@ function isInPeriod(dateStr: string, period: TimePeriod): boolean {
 
 export function filterCoreStatsByPeriod(
   stats: CoreStats,
-  _period: TimePeriod,
+  monthlyData: CoreMonthlyData[],
+  period: TimePeriod,
 ): CoreStats {
-  return stats;
+  if (period === "year") {
+    return stats;
+  }
+
+  const filtered = monthlyData.filter((m) => isInPeriod(m.month, period));
+  const totalVisits = filtered.reduce((sum, m) => sum + m.visits, 0);
+  const totalTours = filtered.reduce((sum, m) => sum + m.tours, 0);
+  const ratioVisits = totalVisits / Math.max(stats.totalVisits, 1);
+  const ratioTours = totalTours / Math.max(stats.totalTours, 1);
+
+  return {
+    totalVisits,
+    totalTours,
+    visitsYoY: Math.round(stats.visitsYoY * ratioVisits * 10) / 10,
+    toursYoY: Math.round(stats.toursYoY * ratioTours * 10) / 10,
+  };
 }
 
 export function filterSchoolRankingsByPeriod(
@@ -26,19 +49,24 @@ export function filterSchoolRankingsByPeriod(
   details: Record<string, { teams: { date: string }[] }>,
   period: TimePeriod,
 ): SchoolData[] {
-  return rankings.map((school) => {
-    const schoolDetail = details[school.id];
-    if (!schoolDetail) return { ...school, teamCount: 0, studentCount: 0 };
+  return rankings
+    .map((school) => {
+      const schoolDetail = details[school.id];
+      if (!schoolDetail) return { ...school, teamCount: 0, studentCount: 0 };
 
-    const filteredTeams = schoolDetail.teams.filter((t) => isInPeriod(t.date, period));
-    const avgStudentsPerTeam = school.studentCount / Math.max(school.teamCount, 1);
+      const filteredTeams = schoolDetail.teams.filter((t) =>
+        isInPeriod(t.date, period),
+      );
+      const avgStudentsPerTeam =
+        school.studentCount / Math.max(school.teamCount, 1);
 
-    return {
-      ...school,
-      teamCount: filteredTeams.length,
-      studentCount: Math.round(filteredTeams.length * avgStudentsPerTeam),
-    };
-  }).sort((a, b) => b.teamCount - a.teamCount);
+      return {
+        ...school,
+        teamCount: filteredTeams.length,
+        studentCount: Math.round(filteredTeams.length * avgStudentsPerTeam),
+      };
+    })
+    .sort((a, b) => b.teamCount - a.teamCount);
 }
 
 export function filterGuideDataByPeriod(
@@ -56,7 +84,7 @@ export function filterMediaDataByPeriod(
 }
 
 export function getPeriodLabel(period: TimePeriod): string {
-  return period === 'year' ? '本年' : '本季';
+  return period === "year" ? "本年" : "本季";
 }
 
 export function getCurrentQuarterMonths(): number[] {

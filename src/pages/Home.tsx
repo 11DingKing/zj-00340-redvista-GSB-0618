@@ -1,19 +1,26 @@
-import { useEffect } from 'react';
-import { useDashboardStore, useFilteredData } from '@/store/dashboardStore';
-import { useCarousel } from '@/hooks/useCarousel';
-import { Header } from '@/components/Header';
-import { StatCard } from '@/components/StatCard';
-import { SchoolRanking } from '@/components/SchoolRanking';
-import { GuideDualAxis } from '@/components/GuideDualAxis';
-import { MediaTrend } from '@/components/MediaTrend';
-import { ProgressRing } from '@/components/ProgressRing';
-import { ActivityList } from '@/components/ActivityList';
-import { SchoolDetailModal } from '@/components/SchoolDetailModal';
+import { useEffect } from "react";
+import { useDashboardStore, useFilteredData } from "@/store/dashboardStore";
+import { useCarousel } from "@/hooks/useCarousel";
+import { Header } from "@/components/Header";
+import { StatCard } from "@/components/StatCard";
+import { SchoolRanking } from "@/components/SchoolRanking";
+import { GuideDualAxis } from "@/components/GuideDualAxis";
+import { SchoolCompare } from "@/components/SchoolCompare";
+import { MediaTrend } from "@/components/MediaTrend";
+import { ProgressRing } from "@/components/ProgressRing";
+import { ActivityList } from "@/components/ActivityList";
+import { SchoolDetailModal } from "@/components/SchoolDetailModal";
 
 export default function Home() {
   const { initData, isLoading } = useDashboardStore();
-  const { coreStats, schoolRankings, guideData, mediaData, martyrProgress, activities } =
-    useFilteredData();
+  const {
+    coreStats,
+    schoolRankings,
+    guideData,
+    mediaData,
+    martyrProgress,
+    activities,
+  } = useFilteredData();
   useCarousel();
 
   useEffect(() => {
@@ -37,35 +44,42 @@ export default function Home() {
 
       <main className="relative z-10 flex-1 overflow-y-auto scrollbar-hide p-6">
         <div className="max-w-[1920px] mx-auto space-y-6">
-          <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <StatCard data={coreStats} />
           </div>
 
           <div
             className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-            style={{ animationDelay: '0.2s' }}
+            style={{ animationDelay: "0.2s" }}
           >
-            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <SchoolRanking data={schoolRankings} />
             </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
               <GuideDualAxis data={guideData} />
             </div>
           </div>
 
+          <div className="animate-fade-in" style={{ animationDelay: "0.45s" }}>
+            <SchoolCompare />
+          </div>
+
           <div
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            style={{ animationDelay: '0.5s' }}
+            style={{ animationDelay: "0.5s" }}
           >
-            <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <div
+              className="lg:col-span-2 animate-fade-in"
+              style={{ animationDelay: "0.6s" }}
+            >
               <MediaTrend data={mediaData} />
             </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.7s' }}>
+            <div className="animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <ProgressRing data={martyrProgress} />
             </div>
           </div>
 
-          <div className="animate-fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="animate-fade-in" style={{ animationDelay: "0.8s" }}>
             <ActivityList data={activities} />
           </div>
         </div>
